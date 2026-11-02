@@ -204,7 +204,8 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin,
                 title: arguments["title"] as? String,
                 image: arguments["image"] as? String,
                 location: location,
-                properties: arguments["properties"] as? [String: Any]
+                properties: (arguments["properties"] as? [String: Any])?
+                    .mapValues(unboxNumbers)
             )
             klaviyo.set(profile: profile)
             result("Profile updated")
@@ -224,7 +225,8 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin,
             }
             let event = Event(
                 name: .customEvent(eventName),
-                properties: arguments["metaData"] as? [String: Any]
+                properties: (arguments["metaData"] as? [String: Any])?
+                    .mapValues(unboxNumbers)
             )
 
             klaviyo.create(event: event)
@@ -249,7 +251,7 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin,
                 klaviyo.create(
                     event: Event(
                         name: .customEvent("$opened_push"),
-                        properties: properties
+                        properties: properties.mapValues(unboxNumbers)
                     )
                 )
 
@@ -427,6 +429,31 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin,
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+}
+
+// Flutter's standard codec hands Dart `int`, `double` and `bool` values to iOS
+// as `NSNumber`. KlaviyoSwift encodes event and profile properties through
+// AnyCodable, which tries `Bool` before any number type, and an `NSNumber`
+// holding 0 or 1 passes that cast, so `qty: 1` would reach Klaviyo as
+// `qty: true`. Unboxing every `NSNumber` into its Swift type, through nested
+// maps and lists, keeps numbers numeric and real booleans boolean.
+private func unboxNumbers(_ value: Any) -> Any {
+    switch value {
+    case let number as NSNumber:
+        if CFGetTypeID(number) == CFBooleanGetTypeID() {
+            return number.boolValue
+        }
+        if CFNumberIsFloatType(number as CFNumber) {
+            return number.doubleValue
+        }
+        return number.intValue
+    case let map as [String: Any]:
+        return map.mapValues(unboxNumbers)
+    case let list as [Any]:
+        return list.map(unboxNumbers)
+    default:
+        return value
     }
 }
 

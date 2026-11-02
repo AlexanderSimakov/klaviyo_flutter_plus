@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+* iOS: keep integer and double event and profile properties numeric. Flutter delivers numbers as `NSNumber`, and KlaviyoSwift's AnyCodable encoding read an `NSNumber` holding 0 or 1 as a boolean, so `qty: 1` reached Klaviyo as `qty: true`. The plugin now unboxes every number, in nested maps and lists too, before handing properties to KlaviyoSwift.
+
 ## 0.2.1
 
 * iOS: scope foreground presentation to Klaviyo-owned pushes and join the standard `FlutterPlugin` lifecycle for `userNotificationCenter:willPresent:` / `:didReceive:` instead of claiming `UNUserNotificationCenter.delegate`. Composes cleanly with `flutter_local_notifications`, `firebase_messaging`, and host `AppDelegate` notification handlers.
