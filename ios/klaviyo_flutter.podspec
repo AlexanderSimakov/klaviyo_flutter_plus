@@ -12,7 +12,7 @@ A new flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Denis r' => 'denis.rybnikov@kitopi.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'klaviyo_flutter/Sources/klaviyo_flutter/**/*.swift'
   s.dependency 'Flutter'
   s.dependency 'KlaviyoSwift', '~> 4.2.1'
   s.ios.deployment_target = '13.0'
